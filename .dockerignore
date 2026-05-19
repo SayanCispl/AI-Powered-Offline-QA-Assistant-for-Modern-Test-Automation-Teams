@@ -1,0 +1,20 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environments
+.venv/
+venv/
+
+# Local DB
+chroma_db/
+
+# Logs
+logs/
+
+# Git
+.git/
+.gitignore
+
+# Env file (we pass separately)
+.env

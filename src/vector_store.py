@@ -2,19 +2,29 @@ import os
 import uuid
 import yaml
 import chromadb
+
 from chromadb.config import Settings
 from chromadb.utils import embedding_functions
 
 
 class VectorStore:
+
     def __init__(self):
-        # ✅ Absolute project root path
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+        # ----------------------------------------
+        # PROJECT ROOT PATH
+        # ----------------------------------------
+        base_dir = os.path.dirname(
+            os.path.dirname(os.path.abspath(__file__))
+        )
+
         persist_path = os.path.join(base_dir, "chroma_db")
 
         print("Chroma persist path:", persist_path)
 
-        # ✅ Persistent Chroma client
+        # ----------------------------------------
+        # PERSISTENT CHROMADB CLIENT
+        # ----------------------------------------
         self.client = chromadb.Client(
             Settings(
                 persist_directory=persist_path,
@@ -22,148 +32,365 @@ class VectorStore:
             )
         )
 
-        # ✅ Embedding function
-        self.embedding_function = embedding_functions.SentenceTransformerEmbeddingFunction(
-            model_name="sentence-transformers/all-MiniLM-L6-v2"
+        # ----------------------------------------
+        # EMBEDDING MODEL
+        # ----------------------------------------
+        # Converts text → vector embeddings
+        # Used for semantic similarity search
+        # ----------------------------------------
+        self.embedding_function = (
+            embedding_functions
+            .SentenceTransformerEmbeddingFunction(
+                model_name="sentence-transformers/all-MiniLM-L6-v2"
+            )
         )
 
-        # ✅ SINGLE collection name (very important)
+        # ----------------------------------------
+        # CREATE / LOAD COLLECTION
+        # ----------------------------------------
         self.collection = self.client.get_or_create_collection(
             name="qa_collection",
             embedding_function=self.embedding_function
         )
 
-        print("Collection document count:", self.collection.count())
-
-    # ----------------------------
-    # ADD DOCUMENT WITH METADATA
-    # ----------------------------
-    def add_document(self, document: str, metadata: dict):
-
-        if not metadata:
-            metadata = {"source": "unknown"}
-
-        self.collection.add(
-            documents=[document],
-            metadatas=[metadata],
-            ids=[str(uuid.uuid4())]
+        print(
+            "Collection document count:",
+            self.collection.count()
         )
 
-    # ----------------------------
-    # BULK LOAD FROM qa_data FOLDER (Reset Collection)
-    # ----------------------------
-    def load_documents_from_folder(self, folder_path: str):
+    # ============================================
+    # ADD SINGLE DOCUMENT
+    # ============================================
+    def add_document(self, document: str, metadata: dict):
+
         """
-        Load all .md files from qa_data folder.
-        Clears existing collection before reloading
-        to prevent duplicate embeddings.
+        Adds a single document chunk into ChromaDB.
+        """
+
+        # ----------------------------------------
+        # PREVENT EMPTY METADATA
+        # ----------------------------------------
+        if not metadata:
+            metadata = {
+                "source": "unknown"
+            }
+
+        try:
+            self.collection.add(
+                documents=[document],
+                metadatas=[metadata],
+                ids=[str(uuid.uuid4())]
+            )
+
+        except Exception as e:
+            print("Error adding document:", e)
+
+    # ============================================
+    # LOAD DOCUMENTS FROM qa_data FOLDER
+    # ============================================
+    def load_documents_from_folder(self, folder_path: str):
+
+        """
+        Loads all markdown QA files into ChromaDB.
+
+        Features:
+        - Clears old embeddings
+        - Extracts metadata
+        - Chunks text
+        - Stores embeddings
         """
 
         print("Loading documents from:", folder_path)
 
-        # 🔥 Step 1: Clear existing collection
+        # ----------------------------------------
+        # CLEAR EXISTING COLLECTION
+        # ----------------------------------------
         current_count = self.collection.count()
-        if current_count > 0:
-            print(f"Clearing existing collection ({current_count} documents)...")
-            self.collection.delete(where={})
-            print("Collection cleared.")
 
+        if current_count > 0:
+
+            print(
+                f"Clearing existing collection "
+                f"({current_count} documents)..."
+            )
+
+            try:
+                all_docs = self.collection.get()
+
+                if all_docs["ids"]:
+                    self.collection.delete(
+                        ids=all_docs["ids"]
+                    )
+
+                print("Collection cleared.")
+
+            except Exception as e:
+                print("Error clearing collection:", e)
+
+        # ----------------------------------------
+        # TRACK TOTAL CHUNKS
+        # ----------------------------------------
         total_chunks_added = 0
 
-        # 🔥 Step 2: Load all markdown files
+        # ----------------------------------------
+        # WALK THROUGH qa_data FOLDER
+        # ----------------------------------------
         for root, _, files in os.walk(folder_path):
+
             for file in files:
+
                 if file.endswith(".md"):
+
                     full_path = os.path.join(root, file)
+
                     print("Processing:", file)
 
-                    with open(full_path, "r", encoding="utf-8") as f:
-                        content = f.read()
+                    try:
 
-                        metadata, body = self._extract_metadata(content)
+                        with open(
+                            full_path,
+                            "r",
+                            encoding="utf-8"
+                        ) as f:
 
-                        # Add filename into metadata (good practice)
-                        metadata["file_name"] = file
+                            content = f.read()
 
-                        chunks = self._chunk_text(body)
+                            # --------------------
+                            # EXTRACT METADATA
+                            # --------------------
+                            metadata, body = (
+                                self._extract_metadata(content)
+                            )
 
-                        for chunk in chunks:
-                            self.add_document(chunk, metadata)
-                            total_chunks_added += 1
+                            # Add source filename
+                            metadata["file_name"] = file
 
-        # 🔥 Step 3: Final count
+                            # --------------------
+                            # CHUNK DOCUMENT
+                            # --------------------
+                            chunks = self._chunk_text(body)
+
+                            # --------------------
+                            # STORE CHUNKS
+                            # --------------------
+                            for chunk in chunks:
+
+                                if chunk.strip():
+
+                                    self.add_document(
+                                        chunk,
+                                        metadata
+                                    )
+
+                                    total_chunks_added += 1
+
+                    except Exception as e:
+                        print(
+                            f"Error processing {file}:",
+                            e
+                        )
+
+        # ----------------------------------------
+        # FINAL DB STATS
+        # ----------------------------------------
         final_count = self.collection.count()
+
         print(f"Total chunks added: {total_chunks_added}")
-        print(f"Final document count in DB: {final_count}")
-        print("QA knowledge base successfully refreshed.")
 
-    # ----------------------------
-    # SEARCH WITH OPTIONAL FILTER
-    # ----------------------------
-    def search(self, query: str, top_k: int = 5, where: dict = None):
+        print(
+            f"Final document count in DB: "
+            f"{final_count}"
+        )
 
-        print("Searching DB... Total docs:", self.collection.count())
+        print(
+            "QA knowledge base successfully refreshed."
+        )
 
-        if where:
-            results = self.collection.query(
-                query_texts=[query],
-                n_results=top_k,
-                where=where
-            )
-        else:
-            results = self.collection.query(
-                query_texts=[query],
-                n_results=top_k
-            )
+    # ============================================
+    # VECTOR SEARCH
+    # ============================================
+    def search(
+        self,
+        query: str,
+        top_k: int = 5,
+        where: dict = None
+    ):
 
-        if results and results.get("documents"):
-            return results["documents"][0]
+        """
+        Performs semantic similarity search.
 
-        return []
+        Returns:
+        [
+            {
+                "document": "...",
+                "confidence": 91.4
+            }
+        ]
+        """
 
-    # ----------------------------
-    # EXTRACT YAML FRONT MATTER
-    # ----------------------------
+        print(
+            "Searching DB... Total docs:",
+            self.collection.count()
+        )
+
+        try:
+
+            # ------------------------------------
+            # QUERY CHROMADB
+            # ------------------------------------
+            if where:
+
+                results = self.collection.query(
+                    query_texts=[query],
+                    n_results=top_k,
+                    where=where
+                )
+
+            else:
+
+                results = self.collection.query(
+                    query_texts=[query],
+                    n_results=top_k
+                )
+
+            # ------------------------------------
+            # HANDLE EMPTY RESULTS
+            # ------------------------------------
+            if not results.get("documents"):
+                return []
+
+            documents = results["documents"][0]
+
+            distances = results.get(
+                "distances",
+                [[]]
+            )[0]
+
+            scored_results = []
+
+            # ------------------------------------
+            # CONVERT DISTANCE → CONFIDENCE
+            # ------------------------------------
+            for doc, distance in zip(
+                documents,
+                distances
+            ):
+
+                # Smaller distance = better match
+                similarity = max(0, 1 - distance)
+
+                confidence = round(
+                    similarity * 100,
+                    2
+                )
+
+                scored_results.append({
+                    "document": doc,
+                    "confidence": confidence
+                })
+
+            return scored_results
+
+        except Exception as e:
+
+            print("Search error:", e)
+
+            return []
+
+    # ============================================
+    # EXTRACT YAML METADATA
+    # ============================================
     def _extract_metadata(self, content: str):
+
+        """
+        Extract YAML front matter metadata.
+        """
 
         metadata = {}
         body = content
 
         if content.startswith("---"):
+
             try:
+
                 parts = content.split("---", 2)
-                metadata = yaml.safe_load(parts[1]) or {}
+
+                metadata = yaml.safe_load(
+                    parts[1]
+                ) or {}
+
                 body = parts[2]
+
             except Exception as e:
-                print("Metadata parsing error:", e)
+
+                print(
+                    "Metadata parsing error:",
+                    e
+                )
+
                 metadata = {}
 
+        # ----------------------------------------
+        # CLEAN METADATA TYPES
+        # ----------------------------------------
         cleaned_metadata = {}
+
         for key, value in metadata.items():
-            if isinstance(value, (str, int, float, bool)):
+
+            if isinstance(
+                value,
+                (str, int, float, bool)
+            ):
+
                 cleaned_metadata[key] = value
+
             else:
+
                 cleaned_metadata[key] = str(value)
 
         return cleaned_metadata, body
 
-    # ----------------------------
-    # SIMPLE TEXT CHUNKING
-    # ----------------------------
-    def _chunk_text(self, text: str, chunk_size: int = 800):
+    # ============================================
+    # TEXT CHUNKING
+    # ============================================
+    def _chunk_text(
+        self,
+        text: str,
+        chunk_size: int = 800
+    ):
+
+        """
+        Splits large documents into
+        smaller semantic chunks.
+        """
 
         paragraphs = text.split("\n\n")
+
         chunks = []
+
         current_chunk = ""
 
         for para in paragraphs:
-            if len(current_chunk) + len(para) < chunk_size:
+
+            if (
+                len(current_chunk) + len(para)
+                < chunk_size
+            ):
+
                 current_chunk += para + "\n\n"
+
             else:
-                chunks.append(current_chunk.strip())
+
+                chunks.append(
+                    current_chunk.strip()
+                )
+
                 current_chunk = para + "\n\n"
 
         if current_chunk:
-            chunks.append(current_chunk.strip())
+
+            chunks.append(
+                current_chunk.strip()
+            )
 
         return chunks

@@ -5,27 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e1604e15-c020-43ab-b467-90a929684df1" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/data/qa_data/Risk-Based_Testing/risk_based_testing.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/qa_data/api_testing/login_api.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/qa_data/api_testing/order_api.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/qa_data/bugs/login_bug.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/qa_data/performance_testing/load_testing.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/qa_data/security/authentication.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/qa_data/test_cases/login.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/qa_data/test_cases/payment.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/qa_data/test_cases/registration.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ingestion/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ingestion/load_qa_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.dockerignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/qa_data/bugs/BUG-101-login-failure.md" beforeDir="false" afterPath="$PROJECT_DIR$/data/qa_data/bugs/BUG-101-login-failure.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/qa_data/release_notes/v1.1.md" beforeDir="false" afterPath="$PROJECT_DIR$/data/qa_data/release_notes/v1.1.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/qa_data/requirements/login.md" beforeDir="false" afterPath="$PROJECT_DIR$/data/qa_data/requirements/login.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/qa_data/test_cases/login_tests.md" beforeDir="false" afterPath="$PROJECT_DIR$/data/qa_data/test_cases/login_tests.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/test_chroma.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_vector_store.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/rag.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/rag.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/vector_store.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/vector_store.py" afterDir="false" />
     </list>
@@ -38,6 +21,16 @@
     <persistenceIdMap>
       <entry key="_/Users/codeclouds-sayan/AIProjects/qa-ai-agent" value="39FV0ntML936FTrfBLmldqkhLWK" />
     </persistenceIdMap>
+  </component>
+  <component name="CopilotUserSelectedModel">
+    <selectedModels>
+      <entry key="chat-panel" value="GPT-5 mini" />
+      <entry key="agent-panel" value="GPT-5 mini" />
+      <entry key="edit-panel" value="GPT-5 mini" />
+    </selectedModels>
+  </component>
+  <component name="EmbeddingIndexingInfo">
+    <option name="cachedIndexableFilesCount" value="25639" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -76,34 +69,34 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.load_qa_data.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.run.executor": "Run",
-    "Python.test_chroma.executor": "Run",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "/Users/codeclouds-sayan/AIProjects/qa-ai-agent",
-    "settings.editor.selected.configurable": "preferences.pluginManager"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.load_qa_data.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.run.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_chroma.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/codeclouds-sayan/AIProjects/qa-ai-agent&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/data" />
       <recent name="$PROJECT_DIR$/src/ingestion" />
       <recent name="$PROJECT_DIR$/src" />
-      <recent name="$PROJECT_DIR$" />
     </key>
   </component>
   <component name="RunManager" selected="Python.run">
