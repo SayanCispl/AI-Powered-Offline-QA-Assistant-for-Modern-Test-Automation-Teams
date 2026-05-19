@@ -61,11 +61,22 @@ class VectorStore:
     # ============================================
     # ADD SINGLE DOCUMENT
     # ============================================
-    def add_document(self, document: str, metadata: dict):
-
+    def add_document(
+            self,
+            document: str,
+            metadata: dict = None,
+            document_id: str = None
+    ):
         """
         Adds a single document chunk into ChromaDB.
         """
+
+        # ----------------------------------------
+        # VALIDATE DOCUMENT
+        # ----------------------------------------
+        if not document or not document.strip():
+            print("Skipping empty document")
+            return
 
         # ----------------------------------------
         # PREVENT EMPTY METADATA
@@ -75,12 +86,20 @@ class VectorStore:
                 "source": "unknown"
             }
 
+        # ----------------------------------------
+        # GENERATE UNIQUE ID
+        # ----------------------------------------
+        if not document_id:
+            document_id = str(uuid.uuid4())
+
         try:
             self.collection.add(
                 documents=[document],
                 metadatas=[metadata],
-                ids=[str(uuid.uuid4())]
+                ids=[document_id]
             )
+
+            print(f"Document added: {document_id}")
 
         except Exception as e:
             print("Error adding document:", e)
@@ -356,7 +375,7 @@ class VectorStore:
     def _chunk_text(
         self,
         text: str,
-        chunk_size: int = 800
+        chunk_size: int = 300
     ):
 
         """
