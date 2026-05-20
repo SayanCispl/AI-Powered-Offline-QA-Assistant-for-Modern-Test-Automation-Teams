@@ -5,16 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e1604e15-c020-43ab-b467-90a929684df1" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/data/load_qa_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/qa_data/test_cases/currency_mismatch.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/qa_data/test_cases/duplicate_transaction.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/qa_data/test_cases/fraud_validation.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/qa_data/test_cases/gateway_timeout.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/qa_data/test_cases/partial_payment.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/qa_data/test_cases/retry_mechanism.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/qa_data/test_cases/webhook_failure.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/qa_data/Risk-Based_Testing/checkout_duplicate_payment_incident.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/qa_data/api_testing/api_authentication_failure.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/qa_data/api_testing/api_timeout_production_issue.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/qa_data/automation_testing/selenium_flaky_test_failure.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run.py" beforeDir="false" afterPath="$PROJECT_DIR$/run.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/qa_agent.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/qa_agent.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/rag.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/rag.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/vector_store.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/vector_store.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -29,13 +27,13 @@
   </component>
   <component name="CopilotUserSelectedModel">
     <selectedModels>
+      <entry key="edit-panel" value="GPT-5 mini" />
       <entry key="chat-panel" value="GPT-5 mini" />
       <entry key="agent-panel" value="GPT-5 mini" />
-      <entry key="edit-panel" value="GPT-5 mini" />
     </selectedModels>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="25639" />
+    <option name="cachedIndexableFilesCount" value="25647" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -222,17 +220,6 @@
       <updated>1770291588432</updated>
     </task>
     <servers />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/main.py</url>
-          <line>21</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>

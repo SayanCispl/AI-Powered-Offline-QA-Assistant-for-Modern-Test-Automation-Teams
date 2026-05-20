@@ -1,116 +1,130 @@
-class RAGPipeline:
-    def __init__(self, vector_store, llm):
-        """
-        RAG Pipeline Constructor
+"""
+RAG Pipeline
+------------
 
-        Parameters:
-        - vector_store : Handles ChromaDB search/retrieval
-        - llm          : Handles Ollama LLM generation
-        """
+Handles:
+- Semantic retrieval
+- Context injection
+- Grounded answer generation
+"""
+
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+
+class RAGPipeline:
+
+    def __init__(self, vector_store, llm):
 
         self.vector_store = vector_store
         self.llm = llm
 
-    def answer(self, question: str, metadata_filter: dict = None):
-        """
-        Main RAG Answer Function
+    # =====================================================
+    # MAIN RAG FLOW
+    # =====================================================
+    def answer(
+        self,
+        question: str,
+        metadata_filter: dict = None
+    ):
 
-        Flow:
-        1. Retrieve relevant QA documents from ChromaDB
-        2. Calculate confidence score
-        3. Build contextual prompt
-        4. Send prompt to LLM
-        5. Return formatted AI response
-        """
+        logging.info("RAG query received")
 
-        # ----------------------------------------
-        # DEBUG LOGGING
-        # ----------------------------------------
-        print("Metadata filter:", metadata_filter)
+        print(f"Metadata filter: {metadata_filter}")
 
-        # ----------------------------------------
-        # SEARCH VECTOR DATABASE
-        # ----------------------------------------
-        # Retrieves top relevant QA documents
-        # along with confidence scores
-        # ----------------------------------------
-        context_docs = self.vector_store.search(
+        # ============================================
+        # VECTOR SEARCH
+        # ============================================
+        results = self.vector_store.search(
             query=question,
             top_k=3,
             where=metadata_filter
         )
 
-        print("Retrieved docs:", context_docs)
+        print("\nRetrieved docs:", results)
 
-        # ----------------------------------------
-        # HANDLE NO RESULTS
-        # ----------------------------------------
-        if not context_docs:
-            return "No relevant QA knowledge found."
+        # ============================================
+        # VALIDATE RESULTS
+        # ============================================
+        if not results:
+            return (
+                "No relevant QA knowledge found."
+            )
 
-        # ----------------------------------------
-        # EXTRACT DOCUMENT TEXT
-        # ----------------------------------------
-        # Convert retrieved document objects
-        # into plain context text
-        # ----------------------------------------
-        context = "\n\n".join(
-            [doc["document"] for doc in context_docs]
+        documents = results.get(
+            "documents",
+            []
         )
 
-        # ----------------------------------------
-        # CALCULATE AVERAGE CONFIDENCE SCORE
-        # ----------------------------------------
-        # Confidence is based on vector similarity
-        # Higher score = better semantic match
-        # ----------------------------------------
-        avg_confidence = sum(
-            doc["confidence"] for doc in context_docs
-        ) / len(context_docs)
+        if not documents:
+            return (
+                "No relevant QA context found."
+            )
 
-        # ----------------------------------------
-        # BUILD FINAL PROMPT
-        # ----------------------------------------
+        if not documents[0]:
+            return (
+                "No matching QA documents found."
+            )
+
+        # ============================================
+        # EXTRACT DOCUMENTS
+        # ============================================
+        retrieved_docs = documents[0]
+
+        # ============================================
+        # BUILD CONTEXT
+        # ============================================
+        context = "\n\n".join(
+            retrieved_docs
+        )
+
+        # ============================================
+        # SAFETY CHECK
+        # ============================================
+        if not context.strip():
+
+            return (
+                "Context retrieval failed."
+            )
+
+        # ============================================
+        # RAG PROMPT
+        # ============================================
         prompt = f"""
-You are a senior QA expert assistant.
+You are a Senior QA AI Assistant.
 
-Use ONLY the provided QA knowledge context
-to answer the user's question.
+Answer ONLY using the provided QA context.
 
-If information is missing,
-clearly mention limitations.
+If the answer is not present in the context,
+say:
+"Not found in QA knowledge base."
 
-========================
-QA KNOWLEDGE CONTEXT
-========================
+==============================
+QA CONTEXT:
+==============================
 
 {context}
 
-========================
-USER QUESTION
-========================
+==============================
+USER QUESTION:
+==============================
 
 {question}
 
-========================
-ANSWER
-========================
+==============================
+ANSWER:
+==============================
 """
 
-        # ----------------------------------------
-        # GENERATE RESPONSE FROM LLM
-        # ----------------------------------------
-        response = self.llm.generate(prompt)
+        # ============================================
+        # GENERATE RESPONSE
+        # ============================================
+        response = self.llm.generate(
+            prompt
+        )
 
-        # ----------------------------------------
-        # FINAL FORMATTED OUTPUT
-        # ----------------------------------------
-        final_response = f"""
-Confidence Score: {avg_confidence:.2f}%
-
-RAG Answer:
-
-{response}
-"""
-
-        return final_response
+        return response

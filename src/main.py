@@ -1,116 +1,383 @@
 import os
+import time
 import logging
+
 from logging.handlers import RotatingFileHandler
+
 from pythonjsonlogger import jsonlogger
 from dotenv import load_dotenv
+
 from rich import print
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+from rich.rule import Rule
+from rich.text import Text
+
 from src.qa_agent import QAAIAgent
 
 
-# ----------------------------
-# Load Environment Variables
-# ----------------------------
+# =====================================================
+# LOAD ENV VARIABLES
+# =====================================================
 load_dotenv()
 
-LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
-DEBUG_MODE = os.getenv("DEBUG", "false").lower() == "true"
+LOG_LEVEL = os.getenv(
+    "LOG_LEVEL",
+    "INFO"
+).upper()
 
+DEBUG_MODE = (
+    os.getenv("DEBUG", "false")
+    .lower() == "true"
+)
 
-# ----------------------------
-# Ensure logs directory exists
-# ----------------------------
+# =====================================================
+# RICH CONSOLE
+# =====================================================
+console = Console()
+
+# =====================================================
+# ENSURE LOG DIRECTORY EXISTS
+# =====================================================
 os.makedirs("logs", exist_ok=True)
 
-
-# ----------------------------
-# Configure Logging
-# ----------------------------
+# =====================================================
+# LOGGER CONFIGURATION
+# =====================================================
 logger = logging.getLogger("qa_ai_agent")
+
 logger.setLevel(LOG_LEVEL)
 
-# JSON Formatter
+# JSON FORMATTER
 json_formatter = jsonlogger.JsonFormatter(
     "%(asctime)s %(levelname)s %(name)s %(message)s"
 )
 
-# File Handler (rotating log)
+# FILE HANDLER
 file_handler = RotatingFileHandler(
     "logs/app.log",
     maxBytes=5 * 1024 * 1024,
     backupCount=3
 )
-file_handler.setFormatter(json_formatter)
 
-# Console Handler (clean human-readable)
+file_handler.setFormatter(
+    json_formatter
+)
+
+# CONSOLE HANDLER
 console_handler = logging.StreamHandler()
+
 console_handler.setFormatter(
-    logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+    logging.Formatter(
+        "%(asctime)s - %(levelname)s - %(message)s"
+    )
 )
 
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
-
-# ----------------------------
-# Safe Execution Wrapper
-# ----------------------------
+# =====================================================
+# SAFE EXECUTION WRAPPER
+# =====================================================
 def safe_execute(func):
+
     try:
         return func()
+
     except Exception as e:
-        logger.exception("Unhandled exception occurred")
-        print("\n[bold red]An unexpected error occurred. Check logs/app.log[/bold red]")
 
+        logger.exception(
+            "Unhandled exception occurred"
+        )
 
-# ----------------------------
-# Main CLI Runner
-# ----------------------------
+        console.print(
+            "\n[bold red]"
+            "An unexpected error occurred."
+            "\nCheck logs/app.log"
+            "[/bold red]"
+        )
+
+# =====================================================
+# BEAUTIFUL HEADER
+# =====================================================
+def show_banner():
+
+    console.print("\n")
+
+    title = Text(
+        "QA AI AGENT",
+        style="bold cyan"
+    )
+
+    subtitle = (
+        "[bold white]"
+        "Offline AI-Powered QA Assistant "
+        "with RAG + Ollama + ChromaDB"
+        "[/bold white]"
+    )
+
+    console.print(
+        Panel.fit(
+            f"{subtitle}",
+            title="🧠 QA Intelligence Platform",
+            border_style="cyan",
+            padding=(1, 4)
+        )
+    )
+
+# =====================================================
+# MENU TABLE
+# =====================================================
+def show_menu():
+
+    table = Table(
+        title="📋 Available Actions",
+        show_header=True,
+        header_style="bold cyan"
+    )
+
+    table.add_column(
+        "Option",
+        style="bold green",
+        width=10
+    )
+
+    table.add_column(
+        "Description",
+        style="white"
+    )
+
+    table.add_row(
+        "1",
+        "Generate Test Cases"
+    )
+
+    table.add_row(
+        "2",
+        "Review Existing Test Cases"
+    )
+
+    table.add_row(
+        "3",
+        "Analyze Bug Report"
+    )
+
+    table.add_row(
+        "4",
+        "Analyze Logs / Errors"
+    )
+
+    table.add_row(
+        "5",
+        "Create QA Checklist"
+    )
+
+    table.add_row(
+        "6",
+        "Ask QA Question (RAG)"
+    )
+
+    table.add_row(
+        "7",
+        "Search QA Memory"
+    )
+
+    table.add_row(
+        "8",
+        "Exit"
+    )
+
+    console.print(table)
+
+# =====================================================
+# FORMAT AI RESPONSE
+# =====================================================
+def render_ai_response(
+    title,
+    content,
+    border_style="green"
+):
+
+    console.print("\n")
+
+    console.print(
+        Panel(
+            content,
+            title=title,
+            border_style=border_style,
+            padding=(1, 2)
+        )
+    )
+
+# =====================================================
+# MAIN APPLICATION
+# =====================================================
 def run():
-    logger.info("QA AI Agent started", extra={"debug_mode": DEBUG_MODE})
+
+    logger.info(
+        "QA AI Agent started",
+        extra={
+            "debug_mode": DEBUG_MODE
+        }
+    )
 
     agent = QAAIAgent()
 
+    show_banner()
+
     while True:
-        print("\n[bold cyan]QA AI Agent[/bold cyan]")
-        print("1. Generate Test Cases from Requirement")
-        print("2. Review Existing Test Cases")
-        print("3. Analyze Bug Report")
-        print("4. Analyze Logs / Errors")
-        print("5. Create QA Checklist")
-        print("6. Ask QA Question (RAG)")
-        print("7. Search QA Memory")
-        print("8. Exit")
 
-        choice = input("\nSelect option: ")
+        show_menu()
 
+        choice = input(
+            "\nSelect option: "
+        ).strip()
+
+        # =================================================
+        # GENERATE TEST CASES
+        # =================================================
         if choice == "1":
-            safe_execute(lambda: print(
-                agent.generate_test_cases(input("\nEnter requirement:\n"))
-            ))
 
+            def handle_test_cases():
+
+                requirement = input(
+                    "\nEnter requirement:\n"
+                )
+
+                result = (
+                    agent.generate_test_cases(
+                        requirement
+                    )
+                )
+
+                render_ai_response(
+                    "🧪 Generated Test Cases",
+                    result
+                )
+
+            safe_execute(
+                handle_test_cases
+            )
+
+        # =================================================
+        # REVIEW TEST CASES
+        # =================================================
         elif choice == "2":
-            safe_execute(lambda: print(
-                agent.review_test_cases(input("\nPaste test cases:\n"))
-            ))
 
+            def handle_review():
+
+                test_cases = input(
+                    "\nPaste test cases:\n"
+                )
+
+                result = (
+                    agent.review_test_cases(
+                        test_cases
+                    )
+                )
+
+                render_ai_response(
+                    "📋 Test Case Review",
+                    result,
+                    "yellow"
+                )
+
+            safe_execute(
+                handle_review
+            )
+
+        # =================================================
+        # BUG ANALYSIS
+        # =================================================
         elif choice == "3":
-            safe_execute(lambda: print(
-                agent.analyze_bug(input("\nPaste bug report:\n"))
-            ))
 
+            def handle_bug():
+
+                bug = input(
+                    "\nPaste bug report:\n"
+                )
+
+                result = (
+                    agent.analyze_bug(
+                        bug
+                    )
+                )
+
+                render_ai_response(
+                    "🐞 Bug Analysis",
+                    result,
+                    "red"
+                )
+
+            safe_execute(
+                handle_bug
+            )
+
+        # =================================================
+        # LOG ANALYSIS
+        # =================================================
         elif choice == "4":
-            safe_execute(lambda: print(
-                agent.analyze_logs(input("\nPaste logs/errors:\n"))
-            ))
 
+            def handle_logs():
+
+                logs = input(
+                    "\nPaste logs/errors:\n"
+                )
+
+                result = (
+                    agent.analyze_logs(
+                        logs
+                    )
+                )
+
+                render_ai_response(
+                    "📄 Log Analysis",
+                    result,
+                    "magenta"
+                )
+
+            safe_execute(
+                handle_logs
+            )
+
+        # =================================================
+        # QA CHECKLIST
+        # =================================================
         elif choice == "5":
-            safe_execute(lambda: print(
-                agent.create_checklist(input("\nEnter feature name:\n"))
-            ))
 
+            def handle_checklist():
+
+                feature = input(
+                    "\nEnter feature name:\n"
+                )
+
+                result = (
+                    agent.create_checklist(
+                        feature
+                    )
+                )
+
+                render_ai_response(
+                    "✅ QA Checklist",
+                    result,
+                    "cyan"
+                )
+
+            safe_execute(
+                handle_checklist
+            )
+
+        # =================================================
+        # RAG QUESTION ANSWERING
+        # =================================================
         elif choice == "6":
+
             def handle_rag():
-                question = input("\nAsk your QA question:\n")
+
+                question = input(
+                    "\nAsk your QA question:\n"
+                )
 
                 logger.info(
                     "RAG query received",
@@ -120,16 +387,65 @@ def run():
                     }
                 )
 
-                answer = agent.ask_with_rag(question)
+                start_time = time.time()
 
-                print("\n[bold green]RAG Answer:[/bold green]\n")
-                print(answer)
+                response = (
+                    agent.ask_with_rag(
+                        question
+                    )
+                )
 
-            safe_execute(handle_rag)
+                end_time = time.time()
 
+                retrieval_time = round(
+                    end_time - start_time,
+                    2
+                )
+
+                answer = response.get(
+                    "answer",
+                    "No answer generated."
+                )
+
+                confidence = response.get(
+                    "confidence_score",
+                    0
+                )
+
+                confidence_bar = (
+                    "█" * int(confidence / 10)
+                )
+
+                formatted_answer = (
+                    f"{answer}\n\n"
+                    f"📊 Confidence Score : "
+                    f"{confidence}%\n"
+                    f"📈 Match Strength   : "
+                    f"{confidence_bar}\n"
+                    f"⚡ Retrieval Time   : "
+                    f"{retrieval_time} sec"
+                )
+
+                render_ai_response(
+                    "🧠 QA AI RAG Answer",
+                    formatted_answer,
+                    "green"
+                )
+
+            safe_execute(
+                handle_rag
+            )
+
+        # =================================================
+        # MEMORY SEARCH
+        # =================================================
         elif choice == "7":
+
             def handle_memory():
-                query = input("\nSearch QA memory:\n")
+
+                query = input(
+                    "\nSearch QA memory:\n"
+                )
 
                 logger.info(
                     "Memory search",
@@ -139,18 +455,101 @@ def run():
                     }
                 )
 
-                results = agent.search_memory(query)
+                results = (
+                    agent.search_memory(
+                        query
+                    )
+                )
 
-                print("\n[bold yellow]Relevant past knowledge:[/bold yellow]")
-                for r in results:
-                    print("-", r)
+                docs = results.get(
+                    "documents",
+                    []
+                )
 
-            safe_execute(handle_memory)
+                distances = results.get(
+                    "distances",
+                    []
+                )
 
+                if not docs:
+
+                    render_ai_response(
+                        "🔍 QA Memory Search",
+                        "No matching documents found.",
+                        "yellow"
+                    )
+
+                    return
+
+                output = ""
+
+                for i, doc in enumerate(docs[0]):
+
+                    distance = (
+                        distances[0][i]
+                    )
+
+                    confidence = round(
+                        max(
+                            0,
+                            min(
+                                100,
+                                (1 - distance) * 100
+                            )
+                        ),
+                        2
+                    )
+
+                    preview = (
+                        doc[:350]
+                        .replace("\n", " ")
+                    )
+
+                    output += (
+                        f"\n[Result {i+1}]\n"
+                        f"Confidence: {confidence}%\n"
+                        f"{preview}\n\n"
+                    )
+
+                render_ai_response(
+                    "🔍 QA Memory Results",
+                    output,
+                    "blue"
+                )
+
+            safe_execute(
+                handle_memory
+            )
+
+        # =================================================
+        # EXIT
+        # =================================================
         elif choice == "8":
-            logger.info("QA AI Agent stopped")
-            print("\n[bold red]Exiting QA AI Agent...[/bold red]")
+
+            logger.info(
+                "QA AI Agent stopped"
+            )
+
+            console.print(
+                "\n[bold red]"
+                "Exiting QA AI Agent..."
+                "[/bold red]"
+            )
+
             break
 
+        # =================================================
+        # INVALID OPTION
+        # =================================================
         else:
-            print("\n[red]Invalid option. Please try again.[/red]")
+
+            console.print(
+                "\n[bold red]"
+                "Invalid option. "
+                "Please try again."
+                "[/bold red]"
+            )
+
+        console.print(
+            Rule(style="dim")
+        )
