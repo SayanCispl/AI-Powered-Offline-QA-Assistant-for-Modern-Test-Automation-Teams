@@ -7,6 +7,7 @@ Central orchestration layer for:
 - RAG retrieval
 - Local LLM interaction
 - Confidence score calculation
+- AI flaky test RCA
 """
 
 from src.vector_store import VectorStore
@@ -28,19 +29,27 @@ class QAAIAgent:
 
         print("Initializing QA AI Agent...")
 
-        # Vector DB
+        # =========================================
+        # VECTOR DATABASE
+        # =========================================
         self.vector_store = VectorStore()
 
-        # Local LLM
+        # =========================================
+        # LOCAL LLM
+        # =========================================
         self.llm = OllamaClient()
 
-        # RAG Pipeline
+        # =========================================
+        # RAG PIPELINE
+        # =========================================
         self.rag = RAGPipeline(
             self.vector_store,
             self.llm
         )
 
-        print("QA AI Agent initialized successfully")
+        print(
+            "QA AI Agent initialized successfully"
+        )
 
     # =====================================================
     # DIRECT LLM TASKS
@@ -87,88 +96,154 @@ class QAAIAgent:
         return self.llm.generate(prompt)
 
     # =====================================================
-    # RAG-BASED QUESTION ANSWERING
+    # INTERNAL CONFIDENCE CALCULATOR
+    # =====================================================
+
+    def _calculate_confidence(
+        self,
+        distance
+    ):
+
+        """
+        Convert vector distance
+        into confidence score.
+        """
+
+        return round(
+            max(
+                0,
+                min(
+                    100,
+                    (1 - distance) * 100
+                )
+            ),
+            2
+        )
+
+    # =====================================================
+    # RAG QUESTION ANSWERING
     # =====================================================
 
     def ask_with_rag(self, question):
 
         """
-        RAG flow:
+        RAG Flow:
         1. Semantic search
         2. Confidence calculation
-        3. Context injection
+        3. Context retrieval
         4. Grounded answer generation
         """
 
         try:
 
-            print(f"\nSearching QA memory for: {question}")
-
-            # -------------------------------------------------
-            # VECTOR SEARCH
-            # -------------------------------------------------
-            results = self.vector_store.search(question)
-
-            # -------------------------------------------------
-            # VALIDATE RESULTS
-            # -------------------------------------------------
-            if not results:
-                return {
-                    "answer": "No relevant QA knowledge found.",
-                    "confidence_score": 0
-                }
-
-            documents = results.get("documents", [[]])
-            distances = results.get("distances", [[]])
-
-            # -------------------------------------------------
-            # HANDLE EMPTY SEARCH
-            # -------------------------------------------------
-            if not documents[0]:
-                return {
-                    "answer": "No matching QA context found.",
-                    "confidence_score": 0
-                }
-
-            # -------------------------------------------------
-            # BEST MATCH DISTANCE
-            # LOWER distance = BETTER match
-            # -------------------------------------------------
-            best_distance = distances[0][0]
-
-            # -------------------------------------------------
-            # CONFIDENCE SCORE CALCULATION
-            # -------------------------------------------------
-            confidence_score = round(
-                max(0, min(100, (1 - best_distance) * 100)),
-                2
+            print(
+                f"\nSearching QA memory for: "
+                f"{question}"
             )
 
-            print(f"Best semantic distance: {best_distance}")
-            print(f"Confidence Score: {confidence_score}%")
+            # =====================================
+            # VECTOR SEARCH
+            # =====================================
+            results = self.vector_store.search(
+                question
+            )
 
-            # -------------------------------------------------
-            # LOW CONFIDENCE SAFETY
-            # -------------------------------------------------
-            if confidence_score < 35:
+            # =====================================
+            # HANDLE EMPTY RESULTS
+            # =====================================
+            if not results:
+
                 return {
                     "answer": (
-                        "Relevant context not confidently found "
-                        "in QA knowledge base."
+                        "No relevant QA knowledge found."
+                    ),
+                    "confidence_score": 0
+                }
+
+            documents = results.get(
+                "documents",
+                [[]]
+            )
+
+            distances = results.get(
+                "distances",
+                [[]]
+            )
+
+            # =====================================
+            # HANDLE EMPTY DOCS
+            # =====================================
+            if not documents[0]:
+
+                return {
+                    "answer": (
+                        "No matching QA context found."
+                    ),
+                    "confidence_score": 0
+                }
+
+            # =====================================
+            # BEST MATCH DISTANCE
+            # =====================================
+            best_distance = distances[0][0]
+
+            confidence_score = (
+                self._calculate_confidence(
+                    best_distance
+                )
+            )
+
+            print(
+                f"Best semantic distance: "
+                f"{best_distance}"
+            )
+
+            print(
+                f"Confidence Score: "
+                f"{confidence_score}%"
+            )
+
+            # =====================================
+            # LOW CONFIDENCE SAFETY
+            # =====================================
+            if confidence_score < 35:
+
+                return {
+                    "answer": (
+                        "Relevant context not confidently "
+                        "found in QA knowledge base."
                     ),
                     "confidence_score": confidence_score
                 }
 
-            # -------------------------------------------------
-            # GENERATE GROUNDED ANSWER
-            # -------------------------------------------------
-            answer = self.rag.answer(question)
+            # =====================================
+            # GENERATE RAG ANSWER
+            # =====================================
+            rag_response = self.rag.answer(
+                question
+            )
 
-            # -------------------------------------------------
-            # FINAL RESPONSE
-            # -------------------------------------------------
+            # =====================================
+            # HANDLE STRING RESPONSE
+            # =====================================
+            if isinstance(
+                rag_response,
+                str
+            ):
+
+                return {
+                    "answer": rag_response,
+                    "confidence_score": confidence_score
+                }
+
+            # =====================================
+            # HANDLE DICT RESPONSE
+            # =====================================
             return {
-                "answer": answer,
+                "answer": rag_response.get(
+                    "answer",
+                    "No answer generated."
+                ),
                 "confidence_score": confidence_score
             }
 
@@ -177,9 +252,43 @@ class QAAIAgent:
             print("RAG Error:", e)
 
             return {
-                "answer": "Error occurred during RAG processing.",
+                "answer": (
+                    "Error occurred during "
+                    "RAG processing."
+                ),
                 "confidence_score": 0
             }
+
+    # =====================================================
+    # AI FLAKY TEST RCA
+    # =====================================================
+
+    def analyze_flaky_test(
+        self,
+        failure_log
+    ):
+
+        """
+        Analyze flaky automation failures
+        using RAG + semantic retrieval.
+        """
+
+        enhanced_prompt = f"""
+Analyze this flaky automation failure.
+
+Provide:
+1. Probable root cause
+2. Why the test is flaky
+3. Recommended fix
+4. Prevention strategy
+
+Automation Failure:
+{failure_log}
+"""
+
+        return self.ask_with_rag(
+            enhanced_prompt
+        )
 
     # =====================================================
     # DIRECT VECTOR SEARCH
@@ -188,18 +297,21 @@ class QAAIAgent:
     def search_memory(self, query):
 
         """
-        Direct semantic search without LLM.
-        Useful for debugging retrieval quality.
+        Direct semantic search
+        without LLM generation.
         """
 
         try:
 
-            results = self.vector_store.search(query)
-
-            return results
+            return self.vector_store.search(
+                query
+            )
 
         except Exception as e:
 
             print("Search Error:", e)
 
-            return None
+            return {
+                "documents": [],
+                "distances": []
+            }

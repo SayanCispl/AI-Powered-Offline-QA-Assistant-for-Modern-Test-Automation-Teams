@@ -5,9 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e1604e15-c020-43ab-b467-90a929684df1" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/api/main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dashboard.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/qa_data/flaky_tests/playwright_locator_failure.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/qa_data/flaky_tests/stale_element_failure.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/qa_data/flaky_tests/timeout_exception.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/qa_agent.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/qa_agent.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

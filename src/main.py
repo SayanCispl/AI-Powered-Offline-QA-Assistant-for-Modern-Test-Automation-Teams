@@ -7,7 +7,6 @@ from logging.handlers import RotatingFileHandler
 from pythonjsonlogger import jsonlogger
 from dotenv import load_dotenv
 
-from rich import print
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -49,6 +48,9 @@ logger = logging.getLogger("qa_ai_agent")
 
 logger.setLevel(LOG_LEVEL)
 
+# Prevent duplicate logs
+logger.handlers.clear()
+
 # JSON FORMATTER
 json_formatter = jsonlogger.JsonFormatter(
     "%(asctime)s %(levelname)s %(name)s %(message)s"
@@ -85,7 +87,7 @@ def safe_execute(func):
     try:
         return func()
 
-    except Exception as e:
+    except Exception:
 
         logger.exception(
             "Unhandled exception occurred"
@@ -105,11 +107,6 @@ def show_banner():
 
     console.print("\n")
 
-    title = Text(
-        "QA AI AGENT",
-        style="bold cyan"
-    )
-
     subtitle = (
         "[bold white]"
         "Offline AI-Powered QA Assistant "
@@ -119,7 +116,7 @@ def show_banner():
 
     console.print(
         Panel.fit(
-            f"{subtitle}",
+            subtitle,
             title="🧠 QA Intelligence Platform",
             border_style="cyan",
             padding=(1, 4)
@@ -185,6 +182,11 @@ def show_menu():
 
     table.add_row(
         "8",
+        "Analyze Flaky Automation Failure"
+    )
+
+    table.add_row(
+        "9",
         "Exit"
     )
 
@@ -208,6 +210,72 @@ def render_ai_response(
             border_style=border_style,
             padding=(1, 2)
         )
+    )
+
+# =====================================================
+# BUILD CONFIDENCE OUTPUT
+# =====================================================
+def build_confidence_output(
+    answer,
+    confidence,
+    retrieval_time
+):
+
+    # =========================================
+    # DYNAMIC CONFIDENCE COLOR
+    # =========================================
+    if confidence >= 80:
+
+        confidence_color = "green"
+        confidence_label = "Excellent Match"
+
+    elif confidence >= 60:
+
+        confidence_color = "yellow"
+        confidence_label = "Moderate Match"
+
+    else:
+
+        confidence_color = "red"
+        confidence_label = "Low Match"
+
+    # =========================================
+    # VISUAL CONFIDENCE BAR
+    # =========================================
+    filled_blocks = int(confidence / 10)
+
+    confidence_bar = (
+        "["
+        + "█" * filled_blocks
+        + "░" * (10 - filled_blocks)
+        + "]"
+    )
+
+    # =========================================
+    # FINAL OUTPUT
+    # =========================================
+    return (
+        f"{answer}\n\n"
+
+        f"[bold {confidence_color}]"
+        f"📊 Confidence Score : "
+        f"{confidence}%"
+        f"[/bold {confidence_color}]\n"
+
+        f"[bold cyan]"
+        f"📈 Match Strength   : "
+        f"{confidence_bar}"
+        f"[/bold cyan]\n"
+
+        f"[bold white]"
+        f"🏷️ Confidence Type : "
+        f"{confidence_label}"
+        f"[/bold white]\n"
+
+        f"[bold magenta]"
+        f"⚡ Retrieval Time   : "
+        f"{retrieval_time} sec"
+        f"[/bold magenta]"
     )
 
 # =====================================================
@@ -253,7 +321,8 @@ def run():
 
                 render_ai_response(
                     "🧪 Generated Test Cases",
-                    result
+                    result,
+                    "green"
                 )
 
             safe_execute(
@@ -412,18 +481,12 @@ def run():
                     0
                 )
 
-                confidence_bar = (
-                    "█" * int(confidence / 10)
-                )
-
                 formatted_answer = (
-                    f"{answer}\n\n"
-                    f"📊 Confidence Score : "
-                    f"{confidence}%\n"
-                    f"📈 Match Strength   : "
-                    f"{confidence_bar}\n"
-                    f"⚡ Retrieval Time   : "
-                    f"{retrieval_time} sec"
+                    build_confidence_output(
+                        answer,
+                        confidence,
+                        retrieval_time
+                    )
                 )
 
                 render_ai_response(
@@ -506,7 +569,7 @@ def run():
                     )
 
                     output += (
-                        f"\n[Result {i+1}]\n"
+                        f"\n[Result {i + 1}]\n"
                         f"Confidence: {confidence}%\n"
                         f"{preview}\n\n"
                     )
@@ -522,9 +585,71 @@ def run():
             )
 
         # =================================================
-        # EXIT
+        # ANALYZE FLAKY AUTOMATION FAILURE
         # =================================================
         elif choice == "8":
+
+            def handle_flaky_test():
+
+                failure_log = input(
+                    "\nPaste automation failure/log:\n"
+                )
+
+                logger.info(
+                    "Flaky test RCA analysis",
+                    extra={
+                        "failure_log": failure_log,
+                        "debug_mode": DEBUG_MODE
+                    }
+                )
+
+                start_time = time.time()
+
+                response = (
+                    agent.analyze_flaky_test(
+                        failure_log
+                    )
+                )
+
+                end_time = time.time()
+
+                retrieval_time = round(
+                    end_time - start_time,
+                    2
+                )
+
+                answer = response.get(
+                    "answer",
+                    "No RCA generated."
+                )
+
+                confidence = response.get(
+                    "confidence_score",
+                    0
+                )
+
+                formatted_answer = (
+                    build_confidence_output(
+                        answer,
+                        confidence,
+                        retrieval_time
+                    )
+                )
+
+                render_ai_response(
+                    "🧪 AI Flaky Test RCA",
+                    formatted_answer,
+                    "cyan"
+                )
+
+            safe_execute(
+                handle_flaky_test
+            )
+
+        # =================================================
+        # EXIT
+        # =================================================
+        elif choice == "9":
 
             logger.info(
                 "QA AI Agent stopped"
