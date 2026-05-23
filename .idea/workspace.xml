@@ -5,20 +5,32 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e1604e15-c020-43ab-b467-90a929684df1" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/data/qa_data/Risk-Based_Testing/checkout_duplicate_payment_incident.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/qa_data/api_testing/api_authentication_failure.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/qa_data/api_testing/api_timeout_production_issue.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/qa_data/automation_testing/selenium_flaky_test_failure.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/api/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/dashboard.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/qa_agent.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/qa_agent.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/rag.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/rag.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/vector_store.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/vector_store.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CopilotChats">
+    <option name="panelChat">
+      <chat>
+        <option name="activeSessionId" value="a89caaeb-8849-4df2-b15d-080a05a7aaf8" />
+        <option name="sessions">
+          <session>
+            <option name="chatType" value="PANEL" />
+            <option name="id" value="a89caaeb-8849-4df2-b15d-080a05a7aaf8" />
+            <option name="modeId" value="Ask" />
+            <option name="modelType" value="builtin_family" />
+            <option name="modelValue" value="auto" />
+            <option name="targetType" value="LOCAL" />
+          </session>
+        </option>
+        <option name="type" value="PANEL" />
+      </chat>
+    </option>
   </component>
   <component name="CopilotPersistence">
     <persistenceIdMap>
@@ -33,7 +45,7 @@
     </selectedModels>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="25647" />
+    <option name="cachedIndexableFilesCount" value="25651" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -97,6 +109,7 @@
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/frontend" />
       <recent name="$PROJECT_DIR$/data" />
       <recent name="$PROJECT_DIR$/src/ingestion" />
       <recent name="$PROJECT_DIR$/src" />
